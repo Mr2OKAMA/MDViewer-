@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Markdown Reader</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="popup">
+    <h1>Markdown Reader</h1>
+    <p id="state" class="state"></p>
+    <div class="actions">
+      <button type="button" id="render">このページを Markdown として表示</button>
+      <button type="button" id="toc">目次の表示/非表示</button>
+      <button type="button" id="theme">テーマ切替</button>
+      <button type="button" id="raw">元の Markdown を表示</button>
+      <button type="button" id="options" class="secondary">設定を開く</button>
+    </div>
+    <script src="../dist/popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "markdown-reader-edge",
+  "version": "1.0.0",
+  "description": "Microsoft Edge / Chrome 向けの Markdown ビューアー拡張機能 (MV3)",
+  "scripts": {
+    "build": "node build.mjs",
+    "icons": "node tools/make-icons.mjs",
+    "test": "node build.mjs && node test/smoke.mjs",
+    "package": "node build.mjs && rm -f markdown-reader.zip && zip -rq markdown-reader.zip manifest.json dist css icons src -x 'src/*.js' && echo markdown-reader.zip"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "dompurify": "^3.4.17",
+    "github-markdown-css": "^5.9.0",
+    "highlight.js": "^11.12.0",
+    "marked": "^18.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.65.0"
+  },
+  "private": true
+}

@@ -1,0 +1,1 @@
+(()=>{chrome.runtime.onMessage.addListener((e,n,r)=>(e?.type==="open-options"&&(chrome.runtime.openOptionsPage(),r({ok:!0})),!1));chrome.runtime.onInstalled.addListener(e=>{e.reason==="install"&&chrome.tabs.create({url:chrome.runtime.getURL("src/options.html?welcome=1")})});})();

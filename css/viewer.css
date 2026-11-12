@@ -1,0 +1,227 @@
+:root[data-md-reader='on'] {
+  --mdr-width: 980px;
+  --mdr-font-size: 16px;
+  --mdr-toc-width: 280px;
+}
+
+:root[data-md-reader='on'][data-mdr-theme='light'] {
+  --mdr-bg: #ffffff;
+  --mdr-surface: #f6f8fa;
+  --mdr-border: #d0d7de;
+  --mdr-fg: #1f2328;
+  --mdr-muted: #656d76;
+  --mdr-accent: #0969da;
+}
+
+:root[data-md-reader='on'][data-mdr-theme='dark'] {
+  --mdr-bg: #0d1117;
+  --mdr-surface: #161b22;
+  --mdr-border: #30363d;
+  --mdr-fg: #e6edf3;
+  --mdr-muted: #8b949e;
+  --mdr-accent: #4493f8;
+}
+
+:root[data-md-reader='on'] body.mdr-body {
+  margin: 0;
+  background: var(--mdr-bg);
+  color: var(--mdr-fg);
+  font-size: var(--mdr-font-size);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Yu Gothic UI', 'Hiragino Sans',
+    'Noto Sans JP', Meiryo, sans-serif;
+}
+
+.mdr-main {
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+  max-width: calc(var(--mdr-width) + 48px);
+}
+
+body.mdr-body:not(.mdr-no-toc) .mdr-main {
+  margin-left: max(var(--mdr-toc-width), calc(50% - var(--mdr-width) / 2));
+  margin-right: auto;
+}
+
+.mdr-content.markdown-body {
+  background: transparent;
+  color: inherit;
+  font-size: var(--mdr-font-size);
+  max-width: var(--mdr-width);
+}
+
+/* ---------- ツールバー ---------- */
+.mdr-toolbar {
+  position: fixed;
+  top: 10px;
+  right: 14px;
+  z-index: 2147483000;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--mdr-border);
+  border-radius: 8px;
+  background: var(--mdr-surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  opacity: 0.35;
+  transition: opacity 0.15s ease;
+}
+
+.mdr-toolbar:hover,
+.mdr-toolbar:focus-within {
+  opacity: 1;
+}
+
+.mdr-btn {
+  min-width: 30px;
+  height: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mdr-fg);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mdr-btn:hover {
+  background: var(--mdr-border);
+}
+
+/* ---------- 目次 ---------- */
+.mdr-toc {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 2147482000;
+  box-sizing: border-box;
+  width: var(--mdr-toc-width);
+  padding: 20px 14px 40px;
+  overflow-y: auto;
+  border-right: 1px solid var(--mdr-border);
+  background: var(--mdr-surface);
+  font-size: 13px;
+}
+
+body.mdr-no-toc .mdr-toc,
+.mdr-toc.mdr-toc-empty {
+  display: none;
+}
+
+.mdr-toc-title {
+  margin-bottom: 10px;
+  color: var(--mdr-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mdr-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mdr-toc-list a {
+  display: block;
+  padding: 3px 8px;
+  border-radius: 5px;
+  color: var(--mdr-fg);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.mdr-toc-list a:hover {
+  background: var(--mdr-border);
+}
+
+.mdr-toc-list a.mdr-active {
+  background: color-mix(in srgb, var(--mdr-accent) 18%, transparent);
+  color: var(--mdr-accent);
+  font-weight: 600;
+}
+
+.mdr-toc-l2 a { padding-left: 18px; }
+.mdr-toc-l3 a { padding-left: 32px; font-size: 12px; }
+.mdr-toc-l4 a { padding-left: 46px; font-size: 12px; color: var(--mdr-muted); }
+
+/* ---------- 本文の装飾 ---------- */
+.mdr-anchor {
+  float: left;
+  margin-left: -0.9em;
+  padding-right: 0.25em;
+  color: var(--mdr-muted);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+}
+
+.markdown-body h1:hover .mdr-anchor,
+.markdown-body h2:hover .mdr-anchor,
+.markdown-body h3:hover .mdr-anchor,
+.markdown-body h4:hover .mdr-anchor,
+.markdown-body h5:hover .mdr-anchor,
+.markdown-body h6:hover .mdr-anchor {
+  opacity: 1;
+}
+
+.markdown-body pre.mdr-pre {
+  position: relative;
+}
+
+.mdr-copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--mdr-border);
+  border-radius: 6px;
+  background: var(--mdr-surface);
+  color: var(--mdr-fg);
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.markdown-body pre.mdr-pre:hover .mdr-copy,
+.mdr-copy:focus {
+  opacity: 1;
+}
+
+.mdr-raw {
+  max-width: var(--mdr-width);
+  padding: 16px;
+  border: 1px solid var(--mdr-border);
+  border-radius: 8px;
+  background: var(--mdr-surface);
+  color: var(--mdr-fg);
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Noto Sans Mono', monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 960px) {
+  body.mdr-body:not(.mdr-no-toc) .mdr-main {
+    margin-left: auto;
+  }
+  .mdr-toc {
+    display: none;
+  }
+}
+
+@media print {
+  .mdr-toolbar,
+  .mdr-toc,
+  .mdr-copy {
+    display: none !important;
+  }
+  body.mdr-body:not(.mdr-no-toc) .mdr-main {
+    margin: 0;
+    padding: 0;
+  }
+}

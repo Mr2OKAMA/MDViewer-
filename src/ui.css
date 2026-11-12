@@ -1,0 +1,148 @@
+:root {
+  color-scheme: light dark;
+  --ui-bg: #ffffff;
+  --ui-fg: #1f2328;
+  --ui-muted: #656d76;
+  --ui-border: #d0d7de;
+  --ui-accent: #0969da;
+  --ui-surface: #f6f8fa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ui-bg: #0d1117;
+    --ui-fg: #e6edf3;
+    --ui-muted: #8b949e;
+    --ui-border: #30363d;
+    --ui-accent: #4493f8;
+    --ui-surface: #161b22;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Yu Gothic UI', 'Noto Sans JP',
+    Meiryo, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+h1 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--ui-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+button {
+  padding: 7px 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  background: var(--ui-accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: var(--ui-surface);
+  color: var(--ui-fg);
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+/* ---------- 設定ページ ---------- */
+.opt main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.opt section {
+  margin-bottom: 28px;
+  padding: 18px 20px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface);
+}
+
+.opt label {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.opt label.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.opt select,
+.opt textarea,
+.opt input[type='range'] {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 6px;
+  box-sizing: border-box;
+}
+
+.opt select,
+.opt textarea {
+  padding: 6px 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font: inherit;
+}
+
+.opt .note ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.opt code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--ui-border);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.status {
+  min-height: 20px;
+  color: var(--ui-accent);
+}
+
+/* ---------- ポップアップ ---------- */
+.popup {
+  width: 280px;
+  padding: 14px 16px 18px;
+}
+
+.popup h1 {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.popup .state {
+  margin: 0 0 12px;
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+
+.popup .actions {
+  display: grid;
+  gap: 8px;
+}

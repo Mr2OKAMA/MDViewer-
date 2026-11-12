@@ -1,0 +1,74 @@
+{
+  "manifest_version": 3,
+  "name": "Markdown Reader",
+  "version": "1.0.0",
+  "description": "ブラウザで Markdown ファイル (.md) を見やすく描画します。ローカルファイルにも対応し、すべての処理をオフラインで行います。",
+  "minimum_chrome_version": "111",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "action": {
+    "default_title": "Markdown Reader",
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "src/options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "file:///*.md*",
+        "file:///*.markdown*",
+        "file:///*.mdown*",
+        "file:///*.mkd*",
+        "file:///*.mkdn*",
+        "file:///*.mdx*",
+        "file:///*.rmd*",
+        "file:///*.MD*",
+        "file:///*.Md*",
+        "*://*/*.md*",
+        "*://*/*.markdown*",
+        "*://*/*.mdown*",
+        "*://*/*.mkd*",
+        "*://*/*.mkdn*",
+        "*://*/*.mdx*",
+        "*://*/*.rmd*"
+      ],
+      "js": [
+        "dist/content.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "css/*.css",
+        "css/hljs/*.css",
+        "icons/*.png"
+      ],
+      "matches": [
+        "file:///*",
+        "*://*/*"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "dist/background.js"
+  }
+}

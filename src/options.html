@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Markdown Reader の設定</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="opt">
+    <main>
+      <h1>Markdown Reader の設定</h1>
+
+      <section>
+        <h2>表示</h2>
+        <label>
+          テーマ
+          <select id="theme">
+            <option value="auto">自動 (OS に合わせる)</option>
+            <option value="light">ライト</option>
+            <option value="dark">ダーク</option>
+          </select>
+        </label>
+        <label>
+          コードのテーマ
+          <select id="codeTheme">
+            <option value="auto">自動</option>
+            <option value="github">GitHub (ライト)</option>
+            <option value="github-dark">GitHub (ダーク)</option>
+            <option value="a11y-light">a11y ライト</option>
+            <option value="a11y-dark">a11y ダーク</option>
+            <option value="monokai">Monokai</option>
+            <option value="nord">Nord</option>
+          </select>
+        </label>
+        <label>
+          本文の最大幅: <output id="contentWidthOut"></output> px
+          <input type="range" id="contentWidth" min="600" max="1600" step="20" />
+        </label>
+        <label>
+          文字サイズ: <output id="fontSizeOut"></output> px
+          <input type="range" id="fontSize" min="12" max="24" step="1" />
+        </label>
+      </section>
+
+      <section>
+        <h2>機能</h2>
+        <label class="row"><input type="checkbox" id="showToc" /> 目次サイドバーを表示する</label>
+        <label class="row"><input type="checkbox" id="headingAnchors" /> 見出しにアンカーリンクを付ける</label>
+        <label class="row"><input type="checkbox" id="copyCodeButton" /> コードブロックにコピーボタンを表示する</label>
+        <label class="row"><input type="checkbox" id="rememberScroll" /> スクロール位置を記憶する</label>
+        <label class="row"><input type="checkbox" id="lineBreaks" /> 単一の改行を改行として描画する (GFM 風)</label>
+      </section>
+
+      <section>
+        <h2>自動描画</h2>
+        <label class="row"><input type="checkbox" id="autoRenderRemote" /> http(s) 上の .md を自動で描画する</label>
+        <label>
+          自動描画しないオリジン (1 行に 1 つ、例: https://example.com)
+          <textarea id="blockedOrigins" rows="4" spellcheck="false"></textarea>
+        </label>
+      </section>
+
+      <section class="note">
+        <h2>ローカルファイル (file://) を表示するには</h2>
+        <ol>
+          <li><code>edge://extensions</code> を開く</li>
+          <li>この拡張機能の「詳細」をクリック</li>
+          <li>「ファイルの URL へのアクセスを許可する」をオンにする</li>
+        </ol>
+      </section>
+
+      <p class="status" id="status" role="status"></p>
+      <button type="button" id="reset" class="secondary">既定値に戻す</button>
+    </main>
+    <script src="../dist/options.js"></script>
+  </body>
+</html>
