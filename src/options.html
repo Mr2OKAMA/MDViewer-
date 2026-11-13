@@ -42,6 +42,18 @@
       </section>
 
       <section>
+        <h2>エディタ</h2>
+        <label>
+          画面レイアウト
+          <select id="editorLayout">
+            <option value="split">2カラム分割 (エディタ + プレビュー)</option>
+            <option value="toggle">トグル式 (エディタ/プレビュー切替)</option>
+          </select>
+        </label>
+        <label class="row"><input type="checkbox" id="autoSave" /> オートセーブ (下書きを自動退避し、開いたファイルへ自動保存)</label>
+      </section>
+
+      <section>
         <h2>機能</h2>
         <label class="row"><input type="checkbox" id="showToc" /> 目次サイドバーを表示する</label>
         <label class="row"><input type="checkbox" id="headingAnchors" /> 見出しにアンカーリンクを付ける</label>

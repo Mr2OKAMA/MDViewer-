@@ -6,9 +6,10 @@ const CHECKBOXES = [
   'copyCodeButton',
   'rememberScroll',
   'lineBreaks',
+  'autoSave',
   'autoRenderRemote'
 ];
-const SELECTS = ['theme', 'codeTheme'];
+const SELECTS = ['theme', 'codeTheme', 'editorLayout'];
 const RANGES = ['contentWidth', 'fontSize'];
 
 const $ = (id) => document.getElementById(id);
