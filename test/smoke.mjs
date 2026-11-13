@@ -92,7 +92,7 @@ try {
   check('コピーボタンがある', (await page.locator('article pre .mdr-copy').count()) === 1);
   check('目次が生成される', (await page.locator('nav.mdr-toc a').count()) === 3);
   check('見出しアンカーが付く', (await page.locator('article h2 a.mdr-anchor').count()) === 1);
-  check('ツールバーがある', (await page.locator('.mdr-toolbar .mdr-btn').count()) === 5);
+  check('ツールバーがある', (await page.locator('.mdr-toolbar .mdr-btn').count()) === 7);
   check('GitHub スタイルが適用される', (await page.locator('style#mdr-github').count()) === 1);
   check('XSS: script が実行されない', (await page.evaluate(() => window.__xss)) === undefined);
   check('XSS: onerror が除去される', (await page.locator('article img[onerror]').count()) === 0);
@@ -108,7 +108,26 @@ try {
   await page.locator('.mdr-toolbar .mdr-btn', { hasText: '</>' }).click();
   check('生 Markdown 表示に切り替わる', await page.locator('pre.mdr-raw').isVisible());
 
-  await page.locator('.mdr-toolbar .mdr-btn').first().click();
+  await page.locator('.mdr-toolbar .mdr-btn', { hasText: '📄' }).click();
+  await page.locator('.mdr-toolbar .mdr-btn', { hasText: '✎' }).click();
+  const ed = page.locator('textarea.mdr-editor');
+  check('エディタが開く', await ed.isVisible());
+  await ed.fill('- a');
+  await ed.press('End');
+  await ed.press('Enter');
+  await ed.type('b');
+  check('リストが自動継続される', (await ed.inputValue()) === '- a\n- b');
+  await ed.press('Control+a');
+  await ed.press('Control+b');
+  check('Ctrl+B で太字', (await ed.inputValue()) === '**- a\n- b**');
+  await page.waitForTimeout(400);
+  check('プレビューが更新される', (await page.locator('article').innerText()).includes('a'));
+  await page.locator('.mdr-edit-tools .mdr-btn[title="表"]').click();
+  check('表を挿入できる', (await ed.inputValue()).includes('| --- |'));
+  await page.locator('.mdr-toolbar .mdr-btn', { hasText: '👁' }).last().click();
+  check('エディタを閉じられる', !(await ed.isVisible()));
+
+  await page.locator('.mdr-toolbar .mdr-btn[title^="目次"]').click();
   await page.waitForTimeout(150);
   check('目次を非表示にできる', !(await page.locator('nav.mdr-toc').isVisible()));
 

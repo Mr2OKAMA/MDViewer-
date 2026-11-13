@@ -214,6 +214,71 @@ body.mdr-no-toc .mdr-toc,
   }
 }
 
+.mdr-editor-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mdr-editor-pane[hidden] {
+  display: none;
+}
+
+.mdr-edit-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mdr-hidden-btn {
+  display: none;
+}
+
+.mdr-editor {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100vh - 168px);
+  padding: 16px;
+  border: 1px solid var(--mdr-border);
+  border-radius: 8px;
+  background: var(--mdr-surface);
+  color: var(--mdr-fg);
+  font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  resize: none;
+  tab-size: 2;
+}
+
+body.mdr-editing .mdr-toc {
+  display: none;
+}
+
+body.mdr-editing .mdr-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: none;
+  margin: 0;
+  padding: 56px 24px 24px;
+}
+
+body.mdr-editing .mdr-content.markdown-body {
+  max-width: none;
+  min-width: 0;
+  overflow: auto;
+  height: calc(100vh - 136px);
+}
+
+body.mdr-edit-toggle .mdr-main {
+  grid-template-columns: 1fr;
+}
+
+body.mdr-edit-toggle:not(.mdr-show-preview) .mdr-content.markdown-body,
+body.mdr-edit-toggle.mdr-show-preview .mdr-editor-pane {
+  display: none;
+}
+
 @media print {
   .mdr-toolbar,
   .mdr-toc,
