@@ -458,6 +458,17 @@ body.mdr-edit-toggle.mdr-show-preview .mdr-editor-pane {
   cursor: pointer;
 }
 
+.mdr-picker-extract {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--mdr-border);
+  font-size: 12px;
+}
+
 .mdr-picker-prompt:hover,
 .mdr-picker-prompt:focus-visible {
   border-color: var(--mdr-accent);

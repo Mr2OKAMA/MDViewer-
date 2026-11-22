@@ -197,7 +197,7 @@ try {
   check('専用エディタ: 新規作成でテンプレート選択が開く', await picker.isVisible());
   check('専用エディタ: 白紙と作業手順書を選べる', (await picker.locator('.mdr-picker-item').count()) >= 2);
   check('専用エディタ: 白紙には AI プロンプトがない', (await picker.locator('.mdr-picker-prompt[data-template="blank"]').count()) === 0);
-  check('専用エディタ: 各手順書に AI プロンプトのコピーボタンがある', (await picker.locator('.mdr-picker-prompt').count()) === 3);
+  check('専用エディタ: 各手順書に AI プロンプトのコピーボタンがある', (await picker.locator('.mdr-picker-prompt[data-template]').count()) === 3);
   await editorPage.evaluate(() => {
     navigator.clipboard.writeText = async (t) => {
       window.__clip = t;
@@ -214,6 +214,16 @@ try {
     );
   }
   check('専用エディタ: プロンプトをコピーしてもダイアログは閉じない', await picker.isVisible());
+  await picker.locator('.mdr-picker-prompt[data-prompt="pdf-extract"]').click();
+  await editorPage.waitForTimeout(200);
+  {
+    const clip = await editorPage.evaluate(() => window.__clip || '');
+    check(
+      '専用エディタ: PDF テキスト化プロンプトをコピーできる',
+      clip.includes('【文書情報】') && clip.includes('［判読不能］') && clip.includes('⚠ 注意：'),
+      clip.slice(0, 40)
+    );
+  }
   await picker.locator('.mdr-picker-item[data-template="work-procedure"]').click();
   await editorPage.waitForTimeout(300);
   check('専用エディタ: テンプレート選択後にダイアログが閉じる', !(await picker.isVisible()));

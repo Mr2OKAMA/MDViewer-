@@ -3,7 +3,7 @@ import DOMPurify from 'dompurify';
 import hljs from 'highlight.js/lib/common';
 import { saveSettings } from './settings.js';
 import { highlightMarkdown } from './md-highlight.js';
-import { TEMPLATES, buildPrompt, today } from './templates.js';
+import { PDF_EXTRACT_PROMPT, TEMPLATES, buildPrompt, today } from './templates.js';
 
 function slugify(text, used) {
   let base = text
@@ -733,6 +733,26 @@ export class Viewer {
         }
         list.appendChild(card);
       }
+      const extract = document.createElement('div');
+      extract.className = 'mdr-picker-extract';
+      const extractLabel = document.createElement('span');
+      extractLabel.textContent = '旧様式の PDF 手順書を改訂する場合：先に PDF をテキスト化 → 各手順書の AI プロンプトで Markdown 化';
+      const extractBtn = document.createElement('button');
+      extractBtn.type = 'button';
+      extractBtn.className = 'mdr-picker-prompt';
+      extractBtn.dataset.prompt = 'pdf-extract';
+      const extractText = '📄 PDF → テキスト化プロンプトをコピー';
+      extractBtn.textContent = extractText;
+      extractBtn.title = 'PDF と一緒に AI に送ると、旧様式の手順書の内容を構造化テキストで書き起こさせます';
+      extractBtn.addEventListener('click', async () => {
+        const ok = await copyText(PDF_EXTRACT_PROMPT);
+        extractBtn.textContent = ok ? '✓ コピーしました（PDF と一緒に AI に送信）' : 'コピーに失敗しました';
+        clearTimeout(extractBtn.timer);
+        extractBtn.timer = setTimeout(() => {
+          extractBtn.textContent = extractText;
+        }, 3000);
+      });
+      extract.append(extractLabel, extractBtn);
       const cancel = document.createElement('button');
       cancel.type = 'button';
       cancel.className = 'mdr-btn mdr-picker-cancel';
@@ -741,7 +761,7 @@ export class Viewer {
       dlg.addEventListener('click', (e) => {
         if (e.target === dlg) dlg.close();
       });
-      dlg.append(h, list, cancel);
+      dlg.append(h, list, extract, cancel);
       document.body.appendChild(dlg);
       this.picker = dlg;
     }
