@@ -135,6 +135,11 @@ export class Viewer {
     this.editor.addEventListener('input', () => this.onEdit());
     this.editor.addEventListener('keydown', (e) => this.onEditorKey(e));
     this.editor.addEventListener('scroll', () => this.syncScroll());
+    this.editor.addEventListener('paste', (e) => this.onEditorPaste(e));
+    this.editor.addEventListener('dragover', (e) => {
+      if (e.dataTransfer?.types.includes('Files')) e.preventDefault();
+    });
+    this.editor.addEventListener('drop', (e) => this.onEditorDrop(e));
     for (const type of ['keyup', 'click', 'select', 'focus']) {
       this.editor.addEventListener(type, () => this.updateStatus());
     }
@@ -498,6 +503,7 @@ export class Viewer {
       ['`', 'インラインコード', () => this.wrap('`', '`', 'code')],
       ['{ }', 'コードブロック', () => this.insertCodeBlock()],
       ['🔗', 'リンク (Ctrl+K)', () => this.insertLink()],
+      ['🖼', '画像を挿入 (Alt+I) — 画像の貼り付け・ドロップでも挿入できます', () => this.pickImage()],
       ['▦', '表', () => this.insertTable()]
     ];
     for (const [label, title, fn] of tools) {
@@ -577,6 +583,91 @@ export class Viewer {
     const text = `[${sel}](https://)`;
     const urlStart = a + sel.length + 3;
     this.replaceRange(a, b, text, urlStart, urlStart + 8);
+  }
+
+  /** 画像ファイルを選択して埋め込む */
+  pickImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.addEventListener('change', () => this.insertImages([...input.files]));
+    input.click();
+  }
+
+  /**
+   * 画像を Base64 で埋め込む。本文の選択範囲には短い参照 ![alt][image-N] を入れ、
+   * データ本体は文書末尾の参照定義 [image-N]: data:... にまとめる。
+   * @param {File[]} files
+   */
+  async insertImages(files) {
+    const images = files.filter((f) => f.type.startsWith('image/'));
+    if (!images.length) return false;
+    const urls = await Promise.all(
+      images.map(
+        (f) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(f);
+          })
+      )
+    );
+    const ta = this.editor;
+    const { selectionStart: a, selectionEnd: b, value } = ta;
+    let n = 0;
+    for (const m of value.matchAll(/^\[image-(\d+)\]:/gm)) n = Math.max(n, Number(m[1]));
+    const sel = value.slice(a, b).trim();
+    const alt = sel && !sel.includes('\n') ? sel.replace(/[[\]]/g, '') : '';
+    const refs = [];
+    const defs = [];
+    images.forEach((f, i) => {
+      const id = `image-${++n}`;
+      const name = f.name && f.name !== 'image.png' ? f.name.replace(/\.[^.]+$/, '').replace(/[[\]]/g, '') : '';
+      refs.push(`![${alt || name || '画像'}][${id}]`);
+      defs.push(`[${id}]: ${urls[i]}`);
+    });
+    const ref = refs.join('\n');
+    const tail = value.slice(b);
+    const body = value.slice(0, a) + ref + tail;
+    // 既存の画像定義の直後なら続けて並べ、それ以外は空行を挟む
+    const afterDef = /(^|\n)\[image-\d+\]: \S+\n$/.test(body);
+    const sep = afterDef || body.endsWith('\n\n') ? '' : body.endsWith('\n') ? '\n' : '\n\n';
+    // 参照と末尾の定義を 1 回の置換で入れて Undo 1 回で戻せるようにする
+    const text = `${ref}${tail}${sep}${defs.join('\n')}\n`;
+    const caret = a + ref.length;
+    const top = ta.scrollTop;
+    this.replaceRange(a, value.length, text, caret, caret);
+    ta.scrollTop = top;
+    this.syncScroll();
+    return true;
+  }
+
+  imageFiles(dataTransfer) {
+    return [...(dataTransfer?.files || [])].filter((f) => f.type.startsWith('image/'));
+  }
+
+  onEditorPaste(e) {
+    const dt = e.clipboardData;
+    const files = this.imageFiles(dt);
+    // Excel などはテキストと一緒に画像も載せるため、テキストがあればテキストの貼り付けを優先する
+    if (!files.length || dt.getData('text/plain')) return;
+    e.preventDefault();
+    this.insertImages(files);
+  }
+
+  onEditorDrop(e) {
+    const files = this.imageFiles(e.dataTransfer);
+    if (!files.length) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const ta = this.editor;
+    ta.focus();
+    // ドロップ位置にカーソルを移す (取得できない場合は現在の選択位置)
+    const pos = document.caretPositionFromPoint?.(e.clientX, e.clientY);
+    if (pos && pos.offsetNode === ta) ta.setSelectionRange(pos.offset, pos.offset);
+    this.insertImages(files);
   }
 
   continueList(e) {
@@ -663,6 +754,9 @@ export class Viewer {
     } else if (mod && !e.shiftKey && key === 'k') {
       e.preventDefault();
       this.insertLink();
+    } else if (e.altKey && !mod && !e.shiftKey && e.code === 'KeyI') {
+      e.preventDefault();
+      this.pickImage();
     } else if (e.key === 'Enter' && !mod && !e.shiftKey && !e.isComposing) {
       this.continueList(e);
     } else if (e.key === 'Tab' && !mod && !e.altKey) {
@@ -799,6 +893,10 @@ export class Viewer {
       const item = [...(e.dataTransfer?.items || [])].find((i) => i.kind === 'file');
       if (!item) return;
       e.preventDefault();
+      if (item.type.startsWith('image/')) {
+        if (this.editing) this.insertImages(this.imageFiles(e.dataTransfer));
+        return;
+      }
       if (this.dirty && !confirm('保存されていない変更は失われます。ファイルを開きますか?')) return;
       const handle = item.getAsFileSystemHandle ? await item.getAsFileSystemHandle() : null;
       const file = handle?.kind === 'file' ? await handle.getFile() : item.getAsFile();

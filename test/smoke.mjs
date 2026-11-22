@@ -125,6 +125,34 @@ try {
   await page.locator('.mdr-edit-tools .mdr-btn[title="表"]').click();
   check('表を挿入できる', (await ed.inputValue()).includes('| --- |'));
 
+  // 画像の貼り付け: 選択範囲が参照に置き換わり、データは末尾の参照定義に入る
+  const PNG_1PX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const pasteImage = (text) =>
+    ed.evaluate((el, [b64, plain]) => {
+      const dt = new DataTransfer();
+      const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      dt.items.add(new File([bin], 'image.png', { type: 'image/png' }));
+      if (plain) dt.setData('text/plain', plain);
+      el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    }, [PNG_1PX, text]);
+  await ed.fill('前 説明図 後\n');
+  await ed.evaluate((el) => el.setSelectionRange(2, 5));
+  await pasteImage();
+  await page.waitForTimeout(300);
+  check(
+    '画像の貼り付けで Markdown 参照に変換される',
+    (await ed.inputValue()) === `前 ![説明図][image-1] 後\n\n[image-1]: data:image/png;base64,${PNG_1PX}\n`,
+    JSON.stringify((await ed.inputValue()).slice(0, 40))
+  );
+  await pasteImage();
+  await page.waitForTimeout(300);
+  check('2 枚目は image-2 として追記される', /\]\[image-2\][\s\S]*\n\[image-1\]: data:[^\n]+\n\[image-2\]: data:/.test(await ed.inputValue()));
+  await page.waitForTimeout(400);
+  check('貼り付けた画像がプレビューに描画される', (await page.locator('article img[src^="data:image/png"]').count()) === 2);
+  await pasteImage('セルの文字');
+  await page.waitForTimeout(300);
+  check('テキストも含む貼り付けは画像に変換しない', !(await ed.inputValue()).includes('image-3'));
+
   await ed.fill('# Title\n\n```js\nfunction greet(name, age) { return name; }\n```\n- [ ] **todo** [link](https://example.com)\n');
   const hl = page.locator('.mdr-hl');
   check('エディタ: 見出しが色分けされる', (await hl.locator('.mdh-heading').count()) === 1);
