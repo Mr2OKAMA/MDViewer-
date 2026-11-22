@@ -5,6 +5,7 @@
   "scripts": {
     "build": "node build.mjs",
     "icons": "node tools/make-icons.mjs",
+    "screenshots": "node build.mjs && node tools/screenshots.mjs",
     "test": "node build.mjs && node test/smoke.mjs",
     "package": "node build.mjs && rm -f markdown-reader.zip && zip -rq markdown-reader.zip manifest.json dist css icons src -x 'src/*.js' && echo markdown-reader.zip"
   },
