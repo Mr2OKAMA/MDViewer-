@@ -437,6 +437,31 @@ body.mdr-edit-toggle.mdr-show-preview .mdr-editor-pane {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
+  align-items: start;
+}
+
+.mdr-picker-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mdr-picker-prompt {
+  padding: 6px 10px;
+  border: 1px dashed var(--mdr-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mdr-accent);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mdr-picker-prompt:hover,
+.mdr-picker-prompt:focus-visible {
+  border-color: var(--mdr-accent);
+  outline: none;
 }
 
 .mdr-picker-item {

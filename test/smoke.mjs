@@ -196,6 +196,24 @@ try {
   const picker = editorPage.locator('dialog.mdr-picker');
   check('専用エディタ: 新規作成でテンプレート選択が開く', await picker.isVisible());
   check('専用エディタ: 白紙と作業手順書を選べる', (await picker.locator('.mdr-picker-item').count()) >= 2);
+  check('専用エディタ: 白紙には AI プロンプトがない', (await picker.locator('.mdr-picker-prompt[data-template="blank"]').count()) === 0);
+  check('専用エディタ: 各手順書に AI プロンプトのコピーボタンがある', (await picker.locator('.mdr-picker-prompt').count()) === 3);
+  await editorPage.evaluate(() => {
+    navigator.clipboard.writeText = async (t) => {
+      window.__clip = t;
+    };
+  });
+  await picker.locator('.mdr-picker-prompt[data-template="field-procedure"]').click();
+  await editorPage.waitForTimeout(200);
+  {
+    const clip = await editorPage.evaluate(() => window.__clip || '');
+    check(
+      '専用エディタ: AI プロンプトにテンプレートと貼り付け欄が入る',
+      clip.includes('# 現場作業手順書') && clip.includes('<source>') && clip.includes('4.2 保護具'),
+      clip.slice(0, 40)
+    );
+  }
+  check('専用エディタ: プロンプトをコピーしてもダイアログは閉じない', await picker.isVisible());
   await picker.locator('.mdr-picker-item[data-template="work-procedure"]').click();
   await editorPage.waitForTimeout(300);
   check('専用エディタ: テンプレート選択後にダイアログが閉じる', !(await picker.isVisible()));

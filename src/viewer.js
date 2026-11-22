@@ -3,7 +3,7 @@ import DOMPurify from 'dompurify';
 import hljs from 'highlight.js/lib/common';
 import { saveSettings } from './settings.js';
 import { highlightMarkdown } from './md-highlight.js';
-import { TEMPLATES, today } from './templates.js';
+import { TEMPLATES, buildPrompt, today } from './templates.js';
 
 function slugify(text, used) {
   let base = text
@@ -37,6 +37,24 @@ function resolveTheme(theme) {
 function codeThemeFile(codeTheme, resolved) {
   if (codeTheme === 'auto') return resolved === 'dark' ? 'github-dark' : 'github';
   return codeTheme;
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // クリップボード API が使えない場合は選択してコピーする
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    (document.querySelector('dialog[open]') || document.body).appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  }
 }
 
 export class Viewer {
@@ -693,7 +711,27 @@ export class Viewer {
           dlg.close();
           this.newDocument(t);
         });
-        list.appendChild(b);
+        const card = document.createElement('div');
+        card.className = 'mdr-picker-card';
+        card.appendChild(b);
+        if (t.promptRules) {
+          const copy = document.createElement('button');
+          copy.type = 'button';
+          copy.className = 'mdr-picker-prompt';
+          copy.dataset.template = t.id;
+          copy.textContent = '🤖 AI プロンプトをコピー';
+          copy.title = 'テキストの手順をこのテンプレートの Markdown に変換させる AI 用プロンプトをコピーします';
+          copy.addEventListener('click', async () => {
+            const ok = await copyText(buildPrompt(t));
+            copy.textContent = ok ? '✓ コピーしました（AI に貼り付けて使用）' : 'コピーに失敗しました';
+            clearTimeout(copy.timer);
+            copy.timer = setTimeout(() => {
+              copy.textContent = '🤖 AI プロンプトをコピー';
+            }, 3000);
+          });
+          card.appendChild(copy);
+        }
+        list.appendChild(card);
       }
       const cancel = document.createElement('button');
       cancel.type = 'button';
