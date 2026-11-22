@@ -191,6 +191,26 @@ try {
   await sEd.waitFor({ timeout: 15000 });
   await editorPage.waitForTimeout(200);
   check('専用エディタ: 再読込で下書きが復元される', (await sEd.inputValue()).startsWith('# 専用エディタ'));
+  editorPage.on('dialog', (d) => d.accept());
+  await editorPage.locator('.mdr-toolbar .mdr-btn', { hasText: '🆕' }).click();
+  const picker = editorPage.locator('dialog.mdr-picker');
+  check('専用エディタ: 新規作成でテンプレート選択が開く', await picker.isVisible());
+  check('専用エディタ: 白紙と作業手順書を選べる', (await picker.locator('.mdr-picker-item').count()) >= 2);
+  await picker.locator('.mdr-picker-item[data-template="work-procedure"]').click();
+  await editorPage.waitForTimeout(300);
+  check('専用エディタ: テンプレート選択後にダイアログが閉じる', !(await picker.isVisible()));
+  check('専用エディタ: 作業手順書テンプレートが入る', (await sEd.inputValue()).startsWith('# 作業手順書'));
+  check(
+    '専用エディタ: テンプレートに今日の日付が入る',
+    (await sEd.inputValue()).includes(await editorPage.evaluate(() => new Date().toLocaleDateString('sv-SE')))
+  );
+  check('専用エディタ: テンプレートがプレビューされる', (await editorPage.locator('article h2').count()) >= 9);
+  await editorPage.locator('.mdr-toolbar .mdr-btn', { hasText: '🆕' }).click();
+  await picker.locator('.mdr-picker-item[data-template="blank"]').click();
+  check('専用エディタ: 白紙で新規作成できる', (await sEd.inputValue()) === '');
+  await editorPage.goto(`chrome-extension://${extId}/src/editor.html?new`);
+  await sEd.waitFor({ timeout: 15000 });
+  check('専用エディタ: ?new でテンプレート選択が開く', await picker.isVisible());
   check('専用エディタ: JS エラーなし', editorErrors.length === 0, editorErrors.join(' | '));
 
   const page2 = await ctx.newPage();
