@@ -215,6 +215,15 @@ try {
     );
   }
   await editorPage.locator('.mdr-toolbar .mdr-btn', { hasText: '🆕' }).click();
+  await picker.locator('.mdr-picker-item[data-template="office-procedure"]').click();
+  {
+    const v = await sEd.inputValue();
+    check(
+      '専用エディタ: 事務向け手順書に転記対応表と提出前チェックがある',
+      v.startsWith('# 事務作業手順書') && v.includes('転記対応表') && v.includes('提出前チェックリスト')
+    );
+  }
+  await editorPage.locator('.mdr-toolbar .mdr-btn', { hasText: '🆕' }).click();
   await picker.locator('.mdr-picker-item[data-template="blank"]').click();
   check('専用エディタ: 白紙で新規作成できる', (await sEd.inputValue()) === '');
   await editorPage.goto(`chrome-extension://${extId}/src/editor.html?new`);
