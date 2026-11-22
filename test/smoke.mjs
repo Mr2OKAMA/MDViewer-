@@ -206,6 +206,24 @@ try {
   );
   check('専用エディタ: テンプレートがプレビューされる', (await editorPage.locator('article h2').count()) >= 9);
   await editorPage.locator('.mdr-toolbar .mdr-btn', { hasText: '🆕' }).click();
+  await picker.locator('.mdr-picker-item[data-template="field-procedure"]').click();
+  {
+    const v = await sEd.inputValue();
+    check(
+      '専用エディタ: 現場向け手順書に必要な項目がある',
+      ['管理番号', '作成日', '分類', '施設名', '特記事項', '必要工具・保護具', '文書作成者', '作業責任者', '承認者', '作業手順', '改訂履歴'].every((k) => v.includes(k))
+    );
+  }
+  await editorPage.locator('.mdr-toolbar .mdr-btn', { hasText: '🆕' }).click();
+  await picker.locator('.mdr-picker-item[data-template="office-procedure"]').click();
+  {
+    const v = await sEd.inputValue();
+    check(
+      '専用エディタ: 事務向け手順書に転記対応表と提出前チェックがある',
+      v.startsWith('# 事務作業手順書') && v.includes('転記対応表') && v.includes('提出前チェックリスト')
+    );
+  }
+  await editorPage.locator('.mdr-toolbar .mdr-btn', { hasText: '🆕' }).click();
   await picker.locator('.mdr-picker-item[data-template="blank"]').click();
   check('専用エディタ: 白紙で新規作成できる', (await sEd.inputValue()) === '');
   await editorPage.goto(`chrome-extension://${extId}/src/editor.html?new`);
