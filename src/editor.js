@@ -8,6 +8,12 @@ async function main() {
   viewer.build();
   viewer.toggleEdit();
   window.__mdReaderViewer = viewer;
+  // ポップアップの「新規作成」から開かれた場合 (?new) はテンプレート選択を表示する
+  const params = new URLSearchParams(location.search);
+  if (params.has('new')) {
+    history.replaceState(null, '', location.pathname);
+    viewer.showTemplatePicker();
+  }
   chrome.storage.onChanged.addListener(async () => {
     viewer.update(await loadSettings());
   });

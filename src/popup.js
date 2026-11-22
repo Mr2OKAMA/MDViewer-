@@ -36,6 +36,10 @@ async function init() {
     await chrome.tabs.create({ url: chrome.runtime.getURL('src/editor.html') });
     window.close();
   });
+  $('new').addEventListener('click', async () => {
+    await chrome.tabs.create({ url: chrome.runtime.getURL('src/editor.html?new') });
+    window.close();
+  });
   $('options').addEventListener('click', () => chrome.runtime.openOptionsPage());
 }
 

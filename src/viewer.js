@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import hljs from 'highlight.js/lib/common';
 import { saveSettings } from './settings.js';
 import { highlightMarkdown } from './md-highlight.js';
+import { TEMPLATES, today } from './templates.js';
 
 function slugify(text, used) {
   let base = text
@@ -53,7 +54,8 @@ export class Viewer {
     this.showPreview = false;
     this.renderPending = false;
     this._dirty = false;
-    this.draftKey = `mdr:draft:${location.href}`;
+    // 専用エディタはクエリ (?new など) が付いても同じ下書きを使う
+    this.draftKey = `mdr:draft:${this.standalone ? location.origin + location.pathname : location.href}`;
     this.marked = new Marked({ gfm: true, breaks: settings.lineBreaks });
   }
 
@@ -183,7 +185,7 @@ export class Viewer {
     this.themeBtn = mk('◐', 'テーマ切替 (自動 → ライト → ダーク)', () => this.cycleTheme());
     this.editBtn = mk('✎', 'エディタを開く (Ctrl+E)', () => this.toggleEdit());
     this.rawBtn = mk('</>', '元の Markdown を表示', () => this.toggleRaw());
-    if (this.standalone) mk('🆕', '新規作成', () => this.newDocument());
+    if (this.standalone) mk('🆕', '新規作成 (テンプレートを選択)', () => this.showTemplatePicker());
     this.openBtn = mk('📂', 'ファイルを開く (Ctrl+O)', () => this.openFile());
     mk('🖨', '印刷', () => window.print());
     mk('⚙', '設定を開く', () => chrome.runtime.sendMessage({ type: 'open-options' }));
@@ -661,11 +663,62 @@ export class Viewer {
     this.updateStatus();
   }
 
-  newDocument() {
+  /** 新規作成時のテンプレート選択ダイアログを表示する */
+  showTemplatePicker() {
+    if (!this.picker) {
+      const dlg = document.createElement('dialog');
+      dlg.className = 'mdr-picker';
+      dlg.setAttribute('aria-labelledby', 'mdr-picker-title');
+      const h = document.createElement('h2');
+      h.id = 'mdr-picker-title';
+      h.textContent = '新規作成 — テンプレートを選択';
+      const list = document.createElement('div');
+      list.className = 'mdr-picker-list';
+      for (const t of TEMPLATES) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'mdr-picker-item';
+        b.dataset.template = t.id;
+        const icon = document.createElement('span');
+        icon.className = 'mdr-picker-icon';
+        icon.textContent = t.icon;
+        const name = document.createElement('span');
+        name.className = 'mdr-picker-name';
+        name.textContent = t.name;
+        const desc = document.createElement('span');
+        desc.className = 'mdr-picker-desc';
+        desc.textContent = t.description;
+        b.append(icon, name, desc);
+        b.addEventListener('click', () => {
+          dlg.close();
+          this.newDocument(t);
+        });
+        list.appendChild(b);
+      }
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'mdr-btn mdr-picker-cancel';
+      cancel.textContent = 'キャンセル';
+      cancel.addEventListener('click', () => dlg.close());
+      dlg.addEventListener('click', (e) => {
+        if (e.target === dlg) dlg.close();
+      });
+      dlg.append(h, list, cancel);
+      document.body.appendChild(dlg);
+      this.picker = dlg;
+    }
+    if (!this.picker.open) this.picker.showModal();
+    this.picker.querySelector('.mdr-picker-item').focus();
+  }
+
+  /** @param {typeof TEMPLATES[number]} [template] 省略時は白紙 */
+  newDocument(template = TEMPLATES[0]) {
     if (this.dirty && !confirm('保存されていない変更は失われます。新規作成しますか?')) return;
+    const date = today();
     this.fileHandle = null;
     this.fileName = null;
-    this.setContent('');
+    this.suggestedName = template.fileName(date);
+    this.setContent(template.content(date));
     this.dirty = false;
     try {
       localStorage.removeItem(this.draftKey);
@@ -674,6 +727,9 @@ export class Viewer {
     }
     if (!this.editing) this.toggleEdit();
     this.editor.focus();
+    this.editor.setSelectionRange(0, 0);
+    this.editor.scrollTop = 0;
+    this.syncScroll();
   }
 
   /** 専用エディタページへのファイルのドラッグ＆ドロップで開く */
@@ -742,7 +798,7 @@ export class Viewer {
   async save() {
     const name =
       this.fileName ||
-      (this.standalone ? 'untitled.md' : decodeURIComponent(location.pathname.split('/').pop())) ||
+      (this.standalone ? this.suggestedName || 'untitled.md' : decodeURIComponent(location.pathname.split('/').pop())) ||
       'document.md';
     try {
       if (window.showSaveFilePicker) {
