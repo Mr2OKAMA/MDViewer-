@@ -32,6 +32,10 @@ async function init() {
     await send('toggle-raw');
     window.close();
   });
+  $('editor').addEventListener('click', async () => {
+    await chrome.tabs.create({ url: chrome.runtime.getURL('src/editor.html') });
+    window.close();
+  });
   $('options').addEventListener('click', () => chrome.runtime.openOptionsPage());
 }
 
