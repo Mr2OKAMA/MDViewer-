@@ -231,30 +231,155 @@ body.mdr-no-toc .mdr-toc,
   gap: 4px;
 }
 
-.mdr-hidden-btn {
-  display: none;
+.mdr-editor-wrap {
+  position: relative;
+  height: calc(100vh - 150px);
+  border: 1px solid var(--mdr-border);
+  border-radius: 8px;
+  background: var(--mdr-surface);
+  overflow: hidden;
+}
+
+.mdr-editor-wrap:focus-within {
+  border-color: var(--mdr-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mdr-accent) 20%, transparent);
+}
+
+/* textarea とハイライト層は文字の配置が完全に一致する必要がある */
+.mdr-editor,
+.mdr-hl {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, 'Noto Sans Mono', monospace;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+  tab-size: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  scrollbar-gutter: stable;
 }
 
 .mdr-editor {
   display: block;
-  box-sizing: border-box;
-  width: 100%;
-  height: calc(100vh - 168px);
-  padding: 16px;
-  border: 1px solid var(--mdr-border);
-  border-radius: 8px;
-  background: var(--mdr-surface);
+  z-index: 1;
+  background: transparent;
   color: var(--mdr-fg);
-  font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  caret-color: var(--mdr-fg);
   resize: none;
-  tab-size: 2;
+  outline: none;
+  overflow: auto;
 }
+
+.mdr-hl {
+  z-index: 0;
+  color: var(--mdr-fg);
+  background: transparent;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.mdr-editor-wrap.mdr-hl-on .mdr-hl {
+  visibility: visible;
+}
+
+.mdr-editor-wrap.mdr-hl-on .mdr-editor {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.mdr-editor-wrap.mdr-hl-on .mdr-editor::selection {
+  background: color-mix(in srgb, var(--mdr-accent) 30%, transparent);
+}
+
+.mdr-edit-status {
+  color: var(--mdr-muted);
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mdr-btn[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--mdr-accent) 22%, transparent);
+  color: var(--mdr-accent);
+}
+
+/* ---------- エディタのシンタックスハイライト ----------
+ * 文字幅が変わると入力位置がずれるため、色・下線・背景のみで表現する */
+:root[data-mdr-theme='light'] .mdr-hl {
+  --mdh-mark: #8c959f;
+  --mdh-heading: #0550ae;
+  --mdh-strong: #bc4c00;
+  --mdh-em: #8250df;
+  --mdh-code: #0a3069;
+  --mdh-code-bg: rgb(175 184 193 / 25%);
+  --mdh-link: #0969da;
+  --mdh-url: #1a7f37;
+  --mdh-list: #cf222e;
+  --mdh-quote: #116329;
+  --mdh-table: #9a6700;
+  --mdh-html: #bf3989;
+  --mdh-meta: #6e7781;
+}
+
+:root[data-mdr-theme='dark'] .mdr-hl {
+  --mdh-mark: #6e7681;
+  --mdh-heading: #79c0ff;
+  --mdh-strong: #ffa657;
+  --mdh-em: #d2a8ff;
+  --mdh-code: #a5d6ff;
+  --mdh-code-bg: rgb(110 118 129 / 30%);
+  --mdh-link: #58a6ff;
+  --mdh-url: #7ee787;
+  --mdh-list: #ff7b72;
+  --mdh-quote: #8ddb8c;
+  --mdh-table: #e3b341;
+  --mdh-html: #ff9bce;
+  --mdh-meta: #8b949e;
+}
+
+.mdr-hl .mdh-mark,
+.mdr-hl .mdh-esc,
+.mdr-hl .mdh-hr,
+.mdr-hl .mdh-fence,
+.mdr-hl .mdh-title,
+.mdr-hl .mdh-quote-mark { color: var(--mdh-mark); }
+.mdr-hl .mdh-heading { color: var(--mdh-heading); }
+.mdr-hl .mdh-heading .mdh-mark { color: var(--mdh-heading); opacity: 0.6; }
+.mdr-hl .mdh-h1,
+.mdr-hl .mdh-h2 { text-decoration: underline 1px color-mix(in srgb, var(--mdh-heading) 35%, transparent); text-underline-offset: 4px; }
+.mdr-hl .mdh-strong { color: var(--mdh-strong); }
+.mdr-hl .mdh-em { color: var(--mdh-em); }
+.mdr-hl .mdh-strike { color: var(--mdh-mark); text-decoration: line-through; }
+.mdr-hl .mdh-code { color: var(--mdh-code); background: var(--mdh-code-bg); border-radius: 3px; }
+.mdr-hl .mdh-link-text { color: var(--mdh-link); }
+.mdr-hl .mdh-url { color: var(--mdh-url); text-decoration: underline 1px; text-underline-offset: 2px; }
+.mdr-hl .mdh-list,
+.mdr-hl .mdh-task { color: var(--mdh-list); }
+.mdr-hl .mdh-task-done { color: var(--mdh-url); }
+.mdr-hl .mdh-quote { color: var(--mdh-quote); }
+.mdr-hl .mdh-table { color: var(--mdh-table); }
+.mdr-hl .mdh-html,
+.mdr-hl .mdh-comment { color: var(--mdh-html); }
+.mdr-hl .mdh-comment { opacity: 0.75; }
+.mdr-hl .mdh-meta { color: var(--mdh-meta); }
+.mdr-hl .mdh-lang { color: var(--mdh-strong); }
+/* フェンスコード内は highlight.js のテーマ色 (関数・引数・キーワード等) を使う */
+.mdr-hl .mdh-codeblock { color: var(--mdr-fg); }
 
 body.mdr-editing .mdr-toc {
   display: none;
 }
 
-body.mdr-editing .mdr-main {
+body.mdr-body.mdr-editing .mdr-main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
@@ -268,6 +393,16 @@ body.mdr-editing .mdr-content.markdown-body {
   min-width: 0;
   overflow: auto;
   height: calc(100vh - 136px);
+}
+
+body.mdr-editing.mdr-no-preview .mdr-main {
+  grid-template-columns: 1fr;
+  max-width: calc(var(--mdr-width) + 48px);
+  margin: 0 auto;
+}
+
+body.mdr-editing.mdr-no-preview .mdr-content.markdown-body {
+  display: none;
 }
 
 body.mdr-edit-toggle .mdr-main {

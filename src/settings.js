@@ -10,6 +10,8 @@ export const DEFAULTS = {
   headingAnchors: true,
   rememberScroll: true,
   editorLayout: 'split',       // 'split' (2カラム) | 'toggle' (エディタ/プレビュー切替)
+  editorPreview: true,         // 2カラム表示で編集中にプレビューを表示する
+  editorHighlight: true,       // エディタのシンタックスハイライト
   autoSave: true,              // 入力ごとに下書き退避 + 開いたファイルへ自動保存
   lineBreaks: false            // 改行を <br> に変換 (GFM 風)
 };

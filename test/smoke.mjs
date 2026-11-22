@@ -124,7 +124,45 @@ try {
   check('プレビューが更新される', (await page.locator('article').innerText()).includes('a'));
   await page.locator('.mdr-edit-tools .mdr-btn[title="表"]').click();
   check('表を挿入できる', (await ed.inputValue()).includes('| --- |'));
-  await page.locator('.mdr-toolbar .mdr-btn', { hasText: '👁' }).last().click();
+
+  await ed.fill('# Title\n\n```js\nfunction greet(name, age) { return name; }\n```\n- [ ] **todo** [link](https://example.com)\n');
+  const hl = page.locator('.mdr-hl');
+  check('エディタ: 見出しが色分けされる', (await hl.locator('.mdh-heading').count()) === 1);
+  check('エディタ: コード内の関数名が色分けされる', (await hl.locator('.hljs-title').count()) > 0);
+  check('エディタ: コード内の引数が色分けされる', (await hl.locator('.hljs-params').innerText()) === 'name, age');
+  check(
+    'エディタ: リスト・リンク・太字が色分けされる',
+    (await hl.locator('.mdh-list').count()) === 1 &&
+      (await hl.locator('.mdh-url').count()) === 1 &&
+      (await hl.locator('.mdh-strong').count()) === 1
+  );
+  check(
+    'エディタ: ハイライト層の文字が入力と一致する',
+    (await hl.evaluate((el) => el.textContent.replace(/\n \n $/, ''))) === (await ed.inputValue())
+  );
+  const geom = await page.evaluate(() => {
+    const ta = document.querySelector('textarea.mdr-editor');
+    const pre = document.querySelector('.mdr-hl');
+    return { ta: ta.clientWidth, pre: pre.clientWidth };
+  });
+  check('エディタ: ハイライト層と入力欄の幅が一致する', geom.ta === geom.pre, JSON.stringify(geom));
+
+  const article = page.locator('article.markdown-body');
+  check('編集中はプレビューが表示される', await article.isVisible());
+  const narrow = (await ed.boundingBox()).width;
+  await page.locator('.mdr-toolbar .mdr-btn[title^="プレビューを隠す"]').click();
+  check('プレビューを非表示にできる', !(await article.isVisible()));
+  check('プレビュー非表示でエディタが広がる', (await ed.boundingBox()).width > narrow);
+  await ed.press('Alt+p');
+  check('Alt+P でプレビューを再表示できる', await article.isVisible());
+  await ed.press('Alt+p');
+  check('Alt+P でプレビューを隠せる', !(await article.isVisible()));
+  await ed.type('extra');
+  await page.locator('.mdr-toolbar .mdr-btn[title^="プレビューを表示"]').click();
+  await page.waitForTimeout(100);
+  check('再表示時にプレビューが最新になる', (await article.innerText()).includes('extra'));
+
+  await page.locator('.mdr-toolbar .mdr-btn', { hasText: '📖' }).click();
   check('エディタを閉じられる', !(await ed.isVisible()));
 
   await page.locator('.mdr-toolbar .mdr-btn[title^="目次"]').click();
@@ -132,6 +170,28 @@ try {
   check('目次を非表示にできる', !(await page.locator('nav.mdr-toc').isVisible()));
 
   check('ページ内 JS エラーなし', errors.length === 0, errors.join(' | '));
+
+  let [sw] = ctx.serviceWorkers();
+  if (!sw) sw = await ctx.waitForEvent('serviceworker');
+  const extId = new URL(sw.url()).host;
+  const editorPage = await ctx.newPage();
+  const editorErrors = [];
+  editorPage.on('pageerror', (e) => editorErrors.push(String(e)));
+  await editorPage.goto(`chrome-extension://${extId}/src/editor.html`);
+  const sEd = editorPage.locator('textarea.mdr-editor');
+  await sEd.waitFor({ timeout: 15000 });
+  check('専用エディタ: ページが開きエディタが表示される', await sEd.isVisible());
+  await sEd.fill('# 専用エディタ\n\n```python\ndef add(a, b):\n    return a + b\n```\n');
+  await editorPage.waitForTimeout(400);
+  check('専用エディタ: プレビューが描画される', (await editorPage.locator('article h1').innerText()).includes('専用エディタ'));
+  check('専用エディタ: コードが色分けされる', (await editorPage.locator('.mdr-hl .hljs-title').count()) > 0);
+  check('専用エディタ: 未保存がタイトルに表示される', (await editorPage.title()).startsWith('●'));
+  check('専用エディタ: ステータスバーに行・列が出る', (await editorPage.locator('.mdr-edit-status').innerText()).includes('行 '));
+  await editorPage.reload();
+  await sEd.waitFor({ timeout: 15000 });
+  await editorPage.waitForTimeout(200);
+  check('専用エディタ: 再読込で下書きが復元される', (await sEd.inputValue()).startsWith('# 専用エディタ'));
+  check('専用エディタ: JS エラーなし', editorErrors.length === 0, editorErrors.join(' | '));
 
   const page2 = await ctx.newPage();
   await page2.goto(`${base}/decoy.html`);

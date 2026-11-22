@@ -10,6 +10,7 @@ async function bundle() {
     entryPoints: {
       content: 'src/content.js',
       options: 'src/options.js',
+      editor: 'src/editor.js',
       popup: 'src/popup.js',
       background: 'src/background.js'
     },

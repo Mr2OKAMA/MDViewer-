@@ -7,6 +7,8 @@ const CHECKBOXES = [
   'rememberScroll',
   'lineBreaks',
   'autoSave',
+  'editorPreview',
+  'editorHighlight',
   'autoRenderRemote'
 ];
 const SELECTS = ['theme', 'codeTheme', 'editorLayout'];
